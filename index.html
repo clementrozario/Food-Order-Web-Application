@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Food Order</title>
+    <script src="main.js" defer></script>
+</head>
+<body>
+    <h1>Food Order Form</h1>
+    
+    <form id="orderForm">
+        <label for="price">Price:</label>
+        <input type="text" id="price" name="price"><br><br>
+    
+        <label for="foodname">Food Name:</label>
+        <input type="text" id="foodname" name="foodname"><br><br>
+    
+        <label for="table">Select Table:</label>
+        <select id="table" name="table">
+            <option value="table1">Table 1</option>
+            <option value="table2">Table 2</option>
+            <option value="table3">Table 3</option>
+        </select><br><br>
+    
+        <button type="submit">Submit</button>
+    </form>
+    
+    <h2>Table 1</h2>
+    <table id="table1" border="1"></table>
+    
+    <h2>Table 2</h2>
+    <table id="table2" border="1"></table>
+    
+    <h2>Table 3</h2>
+    <table id="table3" border="1"></table>
+</body>
+</html>
