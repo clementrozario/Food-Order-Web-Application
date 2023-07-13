@@ -1,42 +1,16 @@
-const apiUrl = "https://crudcrud.com/api/684d54048b1b40dab154757ef9d002e8";
+const apiUrl = "https://crudcrud.com/api/dcea481d4af243b8bfc903af65de9e7f";
 const localStorageKey = "foodOrders";
 
 function storeDataLocally(data) {
-  let storedData = localStorage.getItem(localStorageKey);
-
-  if (storedData) {
-    storedData = JSON.parse(storedData);
-    storedData.push(data);
-  } else {
-    storedData = [data];
-  }
-
+  let storedData = localStorage.getItem(localStorageKey) || "[]";
+  storedData = JSON.parse(storedData);
+  storedData.push(data);
   localStorage.setItem(localStorageKey, JSON.stringify(storedData));
-}
-
-function retrieveDataLocally() {
-  const storedData = localStorage.getItem(localStorageKey);
-
-  if (storedData) {
-    return JSON.parse(storedData);
-  } else {
-    return [];
-  }
-}
-
-function removeDataLocally(index) {
-  let storedData = localStorage.getItem(localStorageKey);
-
-  if (storedData) {
-    storedData = JSON.parse(storedData);
-    storedData.splice(index, 1);
-    localStorage.setItem(localStorageKey, JSON.stringify(storedData));
-  }
 }
 
 async function createEntry(data) {
   try {
-    const response = await fetch(`${apiUrl}/orders`, {
+    const response = await fetch(`${'https://crudcrud.com/api/dcea481d4af243b8bfc903af65de9e7f'}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -45,11 +19,10 @@ async function createEntry(data) {
     });
 
     if (response.ok) {
-      console.log('Data stored successfully in CRUD CRUD API');
       const responseData = await response.json();
       return responseData._id;
     } else {
-      console.error('Error storing data in CRUD CRUD API');
+      console.error('Error storing data in CRUD API');
       return null;
     }
   } catch (error) {
@@ -58,17 +31,14 @@ async function createEntry(data) {
   }
 }
 
-async function deleteEntry(id, index) {
+async function deleteEntry(id) {
   try {
-    const response = await fetch(`${apiUrl}/orders/${id}`, {
+    const response = await fetch(`${'https://crudcrud.com/api/dcea481d4af243b8bfc903af65de9e7f'}/orders/${id}`, {
       method: 'DELETE'
     });
 
-    if (response.ok) {
-      console.log('Data deleted successfully from CRUD CRUD API');
-      removeDataLocally(index);
-    } else {
-      console.error('Error deleting data from CRUD CRUD API');
+    if (!response.ok) {
+      console.error('Error deleting data from CRUD API');
     }
   } catch (error) {
     console.error('Error:', error);
@@ -78,62 +48,64 @@ async function deleteEntry(id, index) {
 document.getElementById("orderForm").addEventListener("submit", async function(event) {
   event.preventDefault();
 
-  var price = document.getElementById("price").value;
-  var foodname = document.getElementById("foodname").value;
-  var table = document.getElementById("table").value;
+  const price = document.getElementById("price").value;
+  const foodname = document.getElementById("foodname").value;
+  const table = document.getElementById("table").value;
 
-  var tableElement = document.getElementById(table);
-  var newRow = tableElement.insertRow(-1);
-  var cell1 = newRow.insertCell(0);
-  var cell2 = newRow.insertCell(1);
-  var cell3 = newRow.insertCell(2);
-
-  cell1.innerHTML = price;
-  cell2.innerHTML = foodname;
-
-  const data = { price: price, foodname: foodname, table: table };
+  const data = { price, foodname, table };
 
   const id = await createEntry(data);
   if (id) {
-    newRow.setAttribute('data-id', id);
-    cell3.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
-
     storeDataLocally({ ...data, id });
+    createTableRow(price, foodname, table, id);
+    clearFormInputs();
   } else {
     console.error('Error creating entry');
-    tableElement.deleteRow(-1);
   }
-
-  document.getElementById("price").value = "";
-  document.getElementById("foodname").value = "";
 });
 
+function createTableRow(price, foodname, table, id) {
+  const tableElement = document.getElementById(table);
+  const newRow = tableElement.insertRow(-1);
+  const cell1 = newRow.insertCell(0);
+  const cell2 = newRow.insertCell(1);
+  const cell3 = newRow.insertCell(2);
+
+  cell1.innerHTML = price;
+  cell2.innerHTML = foodname;
+  cell3.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
+
+  newRow.setAttribute('data-id', id);
+}
+
 function deleteRow(button) {
-  var row = button.parentNode.parentNode;
-  var id = row.getAttribute('data-id');
-  var index = Array.from(row.parentNode.children).indexOf(row);
+  const row = button.parentNode.parentNode;
+  const id = row.getAttribute('data-id');
+  deleteEntry(id);
+  removeDataLocally(id);
+  row.parentNode.removeChild(row);
+}
 
-  if (id) {
-    deleteEntry(id, index);
-
-    row.parentNode.removeChild(row);
+function removeDataLocally(id) {
+  const storedData = localStorage.getItem(localStorageKey);
+  if (storedData) {
+    const parsedData = JSON.parse(storedData);
+    const updatedData = parsedData.filter(item => item.id !== id);
+    localStorage.setItem(localStorageKey, JSON.stringify(updatedData));
   }
 }
 
+function clearFormInputs() {
+  document.getElementById("price").value = "";
+  document.getElementById("foodname").value = "";
+}
+
 window.addEventListener("load", function() {
-  const storedData = retrieveDataLocally();
-
-  storedData.forEach(function(data) {
-    var tableElement = document.getElementById(data.table);
-    var newRow = tableElement.insertRow(-1);
-    var cell1 = newRow.insertCell(0);
-    var cell2 = newRow.insertCell(1);
-    var cell3 = newRow.insertCell(2);
-
-    cell1.innerHTML = data.price;
-    cell2.innerHTML = data.foodname;
-    cell3.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
-
-    newRow.setAttribute('data-id', data.id);
-  });
+  const storedData = localStorage.getItem(localStorageKey);
+  if (storedData) {
+    const parsedData = JSON.parse(storedData);
+    parsedData.forEach(function(data) {
+      createTableRow(data.price, data.foodname, data.table, data.id);
+    });
+  }
 });
